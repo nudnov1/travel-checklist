@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чек-лист для поездки ✈️</title>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --accent-blue: #e0f2fe;
+            --accent-green: #dcfce7;
+            --accent-amber: #fef3c7;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: 80px;
+            line-height: 1.5;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0284c7, #0f172a);
+            color: white;
+            padding: 24px 20px 16px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        header p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        /* Навигация */
+        nav {
+            display: flex;
+            justify-content: center;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .nav-btn {
+            flex: 1;
+            max-width: 160px;
+            padding: 14px 8px;
+            border: none;
+            background: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-btn span.icon {
+            font-size: 1.2rem;
+        }
+
+        .nav-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background-color: #f0f9ff;
+        }
+
+        /* Прогресс бар */
+        .progress-container {
+            max-width: 800px;
+            margin: 16px auto;
+            padding: 0 16px;
+        }
+
+        .progress-bar-bg {
+            background: var(--border);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #38bdf8, #22c55e);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* Контент страниц */
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .category-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .category-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Чекбоксы */
+        .item-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--border);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-row input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            accent-color: var(--primary);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .item-content {
+            flex: 1;
+        }
+
+        .item-text {
+            font-size: 0.95rem;
+            color: var(--text);
+            transition: color 0.2s;
+        }
+
+        .item-subtext {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .item-row.checked .item-text {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .badge-il {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Кнопка сброса */
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            max-width: 800px;
+            margin: 16px auto;
+            padding: 0 16px;
+        }
+
+        .btn-reset {
+            background: none;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .btn-reset:hover {
+            background: #f1f5f9;
+            color: #334155;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>✈️ Семейное путешествие</h1>
+        <p>2 взрослых (Мужчина и Женщина) + ребёнок (19 месяцев)</p>
+    </header>
+
+    <nav>
+        <button class="nav-btn active" onclick="showPage('all')">
+            <span class="icon">📋</span>
+            <span>Общий</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('pharmacy')">
+            <span class="icon">💊</span>
+            <span>Аптечка</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('cabin')">
+            <span class="icon">🎒</span>
+            <span>В самолёт</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('luggage')">
+            <span class="icon">🧳</span>
+            <span>В багаж</span>
+        </button>
+    </nav>
+
+    <div class="progress-container">
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+        <div class="progress-text">
+            <span>Прогресс сборов:</span>
+            <span id="progressText">0% (0 / 0)</span>
+        </div>
+    </div>
+
+    <main id="app">
+        <!-- Страница: Общий список -->
+        <div id="page-all" class="page active"></div>
+
+        <!-- Страница: Аптечка -->
+        <div id="page-pharmacy" class="page"></div>
+
+        <!-- Страница: В самолет -->
+        <div id="page-cabin" class="page"></div>
+
+        <!-- Страница: В багаж -->
+        <div id="page-luggage" class="page"></div>
+    </main>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetAll()">Сбросить все галочки</button>
+    </div>
+
+    <script>
+        const checklistData = [
+            // ==================== АПТЕЧКА ====================
+            // Детская аптечка
+            { id: "pharm_1", text: "Nurofen for Children / Advil Children", sub: "Ибупрофен в сиропе или свечах (жаропонижающее)", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_2", text: "Acamol Tifat / Novimol", sub: "Парацетамол в каплях/сиропе", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_3", text: "Tasectan Kids", sub: "Порошок от диареи и кишечных инфекций (аналог Смекты)", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_4", text: "Minerali / Hydran", sub: "Раствор для регидратации при рвоте и поносе (Регидрон)", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_5", text: "Bio-Gaia / Altman Probiotics", sub: "Пробиотики в каплях", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_6", text: "Sterimar Baby / Otrivin Baby", sub: "Солевой спрей для промывания носа", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_7", text: "Otrivin Baby Назальный аспиратор", sub: "Соплеотсос со сменными насадками", cat: "pharmacy", tag: "👶 Ребёнок" },
+            { id: "pharm_8", text: "Otrivin Baby 0.025%", sub: "Сосудосуживающие капли (при сильной заложенности)", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_9", text: "Otikon / Otipax", sub: "Ушные капли при боли после перелёта или купания", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_10", text: "Fenistil Gel", sub: "Гель от укусов комаров и зуда", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_11", text: "Fenistil Drops / Tipat Zyrtec", sub: "Капли от аллергии (лучше взять рецепт у педиатра)", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_12", text: "Inotyol / Bepanthen / Desitin", sub: "Крем от опрелостей / под подгузник", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_13", text: "Dr. Fischer Ultrasol Baby 50+", sub: "Детский солнцезащитный крем (минеральный)", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_14", text: "Biafine", sub: "Крем от ожогов (аналог Пантенола)", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            { id: "pharm_15", text: "Snoan / Anavit", sub: "Детский репеллент от комаров 1+", cat: "pharmacy", tag: "👶 Ребёнок", il: true },
+            
+            // Взрослая аптечка
+            { id: "pharm_16", text: "Optalgin (Дипирон)", sub: "От сильной боли и высокой температуры", cat: "pharmacy", tag: "👨👩 Взрослые", il: true },
+            { id: "pharm_17", text: "Advil / Nurofen", sub: "Ибупрофен для взрослых", cat: "pharmacy", tag: "👨👩 Взрослые", il: true },
+            { id: "pharm_18", text: "Narocin / Point", sub: "От сильной суставной и мышечной боли", cat: "pharmacy", tag: "👨👩 Взрослые", il: true },
+            { id: "pharm_19", text: "Kal-Beten", sub: "От отравления, расстройства ЖКТ и поноса", cat: "pharmacy", tag: "👨👩 Взрослые", il: true },
+            { id: "pharm_20", text: "Tums / Gaviscon", sub: "Таблетки или суспензия от изжоги", cat: "pharmacy", tag: "👨👩 Взрослые", il: true },
+            { id: "pharm_21", text: "Stopit / Imodium", sub: "От сильной диареи", cat: "pharmacy", tag: "👨👩 Взрослые", il: true },
+            { id: "pharm_22", text: "Strepsils / Kal-Garon", sub: "Леденцы и спреи для горла", cat: "pharmacy", tag: "👨👩 Взрослые", il: true },
+            { id: "pharm_23", text: "Otrivin / Alrin", sub: "Спреи в нос для взрослых", cat: "pharmacy", tag: "👨👩 Взрослые", il: true },
+            { id: "pharm_24", text: "Loraclear / Zyllergy", sub: "Таблетки от аллергии (Лоратадин/Цетрин)", cat: "pharmacy", tag: "👨👩 Взрослые", il: true },
+            { id: "pharm_25", text: "Средства женского здоровья", sub: "Препараты при акклиматизации (от цистита/молочницы)", cat: "pharmacy", tag: "👩 Женщине" },
+            
+            // Общая перевязка и антисептики
+            { id: "pharm_26", text: "Пластыри Life / Hansaplast", sub: "Водонепроницаемые и мозольные разных размеров", cat: "pharmacy", tag: "🩹 Общее" },
+            { id: "pharm_27", text: "Polydine / Vita-Merfen", sub: "Антисептик (йод без жжения / спрей-крем)", cat: "pharmacy", tag: "🩹 Общее", il: true },
+            { id: "pharm_28", text: "Бинты (стерильный и эластичный)", sub: "Для фиксации и перевязок", cat: "pharmacy", tag: "🩹 Общее" },
+            { id: "pharm_29", text: "Градусник электронный / инфракрасный", sub: "Строго НЕ ртутный!", cat: "pharmacy", tag: "🩹 Общее" },
+            { id: "pharm_30", text: "Пинцет", sub: "Для удаления заноз", cat: "pharmacy", tag: "🩹 Общее" },
+
+            // ==================== В САМОЛЕТ (РУЧНАЯ КЛАДЬ) ====================
+            { id: "cab_1", text: "Загранпаспорта", sub: "2 взрослых + 1 ребёнок (проверить срок действия)", cat: "cabin", tag: "📄 Документы" },
+            { id: "cab_2", text: "Свидетельство о рождении ребёнка", sub: "Оригинал + копии", cat: "cabin", tag: "📄 Документы" },
+            { id: "cab_3", text: "Авиабилеты и ваучер отеля", sub: "Сохранены оффлайн на телефоне + распечатка", cat: "cabin", tag: "📄 Документы" },
+            { id: "cab_4", text: "Медицинская страховка", sub: "Распечатанные полисы на всю семью", cat: "cabin", tag: "📄 Документы" },
+            { id: "cab_5", text: "Кошелек, кредитки, наличные", sub: "Валюта на трансфер, чаевые и первые расходы", cat: "cabin", tag: "💳 Финансы" },
+            { id: "cab_6", text: "Подгузники (8-10 шт.)", sub: "С хорошим запасом на случай задержки рейса", cat: "cabin", tag: "👶 В дорогу ребёнку" },
+            { id: "cab_7", text: "Влажные и сухие салфетки", sub: "Большая пачка детских + антисептические", cat: "cabin", tag: "👶 В дорогу ребёнку" },
+            { id: "cab_8", text: "Сменная одежда ребёнку (2 комплекта)", sub: "Боди/слипы, штанишки, носки в отдельном пакете", cat: "cabin", tag: "👶 В дорогу ребёнку" },
+            { id: "cab_9", text: "Детское питание, пюре и паучи", sub: "Питание для детей до 2 лет можно в объеме >100мл", cat: "cabin", tag: "👶 В дорогу ребёнку" },
+            { id: "cab_10", text: "Поильник / бутылочка с водой", sub: "Обязательно давать пить на взлёте и посадке", cat: "cabin", tag: "👶 В дорогу ребёнку" },
+            { id: "cab_11", text: "Соска-пустышка (2 шт.) + держатель", sub: "Если использует", cat: "cabin", tag: "👶 В дорогу ребёнку" },
+            { id: "cab_12", text: "Игрушки и книжки", sub: "1 любимая игрушка + 2-3 новые компактные", cat: "cabin", tag: "👶 В дорогу ребёнку" },
+            { id: "cab_13", text: "Лекарства первой необходимости в полёт", sub: "Детское жаропонижающее, солевой спрей, пластырь", cat: "cabin", tag: "💉 В дорогу" },
+            { id: "cab_14", text: "Смартфоны и зарядные кабели", sub: "С загруженными мультфильмами оффлайн", cat: "cabin", tag: "🔌 Электроника" },
+            { id: "cab_15", text: "Power Bank (Внешний аккумулятор)", sub: "Запрещено сдавать в багаж — только в ручную кладь!", cat: "cabin", tag: "🔌 Электроника" },
+            { id: "cab_16", text: "Наушники и планшет/приставка", sub: "Для взрослых и ребёнка", cat: "cabin", tag: "🔌 Электроника" },
+            { id: "cab_17", text: "Сменные футболки родителям", sub: "1 футболка папе, 1 маме (на случай если ребёнок прольет что-то)", cat: "cabin", tag: "👨👩 Взрослые" },
+            { id: "cab_18", text: "Легкий плед или кофта с капюшоном", sub: "В салоне самолёта часто работает кондиционер", cat: "cabin", tag: "👨👩 Взрослые" },
+
+            // ==================== В БАГАЖ ====================
+            // Одежда и обувь ребёнка
+            { id: "lug_1", text: "Одежда ребёнку по дням (8-10 комплектов)", sub: "Футболки, шортики, бодики", cat: "luggage", tag: "👶 Детское" },
+            { id: "lug_2", text: "Тёплая одежда малышу", sub: "Кофта/кардиган, длинные штанишки, носочки", cat: "luggage", tag: "👶 Детское" },
+            { id: "lug_3", text: "Головные уборы (2-3 шт.)", sub: "Панамки, кепки с защитой шеи", cat: "luggage", tag: "👶 Детское" },
+            { id: "lug_4", text: "Обувь детская (2-3 пары)", sub: "Удобные сандалии, кроссовки, аквасоки для пляжа", cat: "luggage", tag: "👶 Детское" },
+            { id: "lug_5", text: "Купальный костюм / плавки с SPF", sub: "Специальные плавательные трусики/подгузники", cat: "luggage", tag: "👶 Детское" },
+            { id: "lug_6", text: "Полотенце-пончо с капюшоном", sub: "Удобно вытирать после моря/бассейна", cat: "luggage", tag: "👶 Детское" },
+            { id: "lug_7", text: "Запас подгузников на первые 2-3 дня", sub: "Основную пачку можно докупить на месте", cat: "luggage", tag: "👶 Детское" },
+            
+            // Одежда и обувь взрослых
+            { id: "lug_8", text: "Летняя одежда мужчинам (Папе)", sub: "Футболки, шорты, льняные рубашки, брюки", cat: "luggage", tag: "👨 Мужчине" },
+            { id: "lug_9", text: "Летняя одежда женщине (Маме)", sub: "Платья, сарафаны, шорты, блузки, юбки", cat: "luggage", tag: "👩 Женщине" },
+            { id: "lug_10", text: "Купальники и плавки", sub: "Минимум по 2 комплекта каждому взрослым", cat: "luggage", tag: "👨👩 Взрослые" },
+            { id: "lug_11", text: "Тёплая одежда на вечер", sub: "Худи, джинсы, легкие ветровки", cat: "luggage", tag: "👨👩 Взрослые" },
+            { id: "lug_12", text: "Обувь взрослым", sub: "Пляжные сланцы, удобные сандалии, кроссовки для ходьбы", cat: "luggage", tag: "👨👩 Взрослые" },
+            { id: "lug_13", text: "Головные уборы и солнцезащитные очки", sub: "Шляпы, кепки, очки для всех", cat: "luggage", tag: "👨👩 Взрослые" },
+            
+            // Гигиена, уход и быт
+            { id: "lug_14", text: "Шампуни, гели для душа, кондиционер", sub: "Детский гипоаллергенный гель + взрослые", cat: "luggage", tag: "🧴 Гигиена" },
+            { id: "lug_15", text: "Зубные щётки и пасты", sub: "Детская паста (безопасная при проглатывании) + взрослая", cat: "luggage", tag: "🧴 Гигиена" },
+            { id: "lug_16", text: "Солнцезащитные кремы для взрослых", sub: "SPF 30 / 50", cat: "luggage", tag: "🧴 Гигиена" },
+            { id: "lug_17", text: "Средства личной и женской гигиены", sub: "Прокладки/тампоны, бритвенный станок, дезодоранты", cat: "luggage", tag: "🧴 Гигиена" },
+            { id: "lug_18", text: "Маникюрный набор (ножницы, пилочка)", sub: "Строго в багаж!", cat: "luggage", tag: "🧴 Гигиена" },
+            { id: "lug_19", text: "Детские стиральные пластины / гель", sub: "Мини-упаковка для быстрого споласкивания вещей", cat: "luggage", tag: "🏠 Быт" },
+            { id: "lug_20", text: "Пляжная сумка и пакетики для мокрого", sub: "Зип-пакеты и пакеты для грязного белья", cat: "luggage", tag: "🏠 Быт" },
+            
+            // Габаритное и техника
+            { id: "lug_21", text: "Коляска прогулочная (компактная)", sub: "Сдаётся у трапа или в багаж", cat: "luggage", tag: "🚗 Габариты" },
+            { id: "lug_22", text: "Зарядные устройства, переходники/адаптеры", sub: "Для всех гаджетов", cat: "luggage", tag: "🔌 Электроника" }
+        ];
+
+        // Загрузка состояния из localStorage
+        let state = JSON.parse(localStorage.getItem('trip_checklist_state_v2') || '{}');
+
+        function saveState() {
+            localStorage.setItem('trip_checklist_state_v2', JSON.stringify(state));
+            updateProgress();
+        }
+
+        function toggleItem(id) {
+            state[id] = !state[id];
+            saveState();
+            
+            const rows = document.querySelectorAll(`[data-id="${id}"]`);
+            rows.forEach(row => {
+                const cb = row.querySelector('input');
+                cb.checked = state[id];
+                if (state[id]) {
+                    row.classList.add('checked');
+                } else {
+                    row.classList.remove('checked');
+                }
+            });
+        }
+
+        function renderItems() {
+            const pages = {
+                all: document.getElementById('page-all'),
+                pharmacy: document.getElementById('page-pharmacy'),
+                cabin: document.getElementById('page-cabin'),
+                luggage: document.getElementById('page-luggage')
+            };
+
+            Object.values(pages).forEach(p => p.innerHTML = '');
+
+            const categories = {
+                pharmacy: { name: "💊 Аптечка (с израильскими аналогами)", items: [] },
+                cabin: { name: "🎒 В самолёт (Ручная кладь)", items: [] },
+                luggage: { name: "🧳 В багаж (Основной чемодан)", items: [] }
+            };
+
+            checklistData.forEach(item => {
+                categories[item.cat].items.push(item);
+            });
+
+            ['pharmacy', 'cabin', 'luggage'].forEach(catKey => {
+                const catData = categories[catKey];
+                
+                const pageContainer = pages[catKey];
+                const card = createCategoryCard(catData.name, catData.items);
+                pageContainer.appendChild(card);
+
+                const allCard = createCategoryCard(catData.name, catData.items);
+                pages.all.appendChild(allCard);
+            });
+
+            updateProgress();
+        }
+
+        function createCategoryCard(title, items) {
+            const card = document.createElement('div');
+            card.className = 'category-card';
+
+            const header = document.createElement('div');
+            header.className = 'category-title';
+            header.innerText = title;
+            card.appendChild(header);
+
+            items.forEach(item => {
+                const isChecked = !!state[item.id];
+                const row = document.createElement('div');
+                row.className = `item-row ${isChecked ? 'checked' : ''}`;
+                row.setAttribute('data-id', item.id);
+                row.onclick = (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        const cb = row.querySelector('input');
+                        cb.checked = !cb.checked;
+                    }
+                    toggleItem(item.id);
+                };
+
+                row.innerHTML = `
+                    <input type="checkbox" ${isChecked ? 'checked' : ''}>
+                    <div class="item-content">
+                        <div class="item-text">
+                            ${item.text}
+                            ${item.tag ? `<span class="badge">${item.tag}</span>` : ''}
+                            ${item.il ? `<span class="badge badge-il">IL Pharmacy</span>` : ''}
+                        </div>
+                        ${item.sub ? `<div class="item-subtext">${item.sub}</div>` : ''}
+                    </div>
+                `;
+                card.appendChild(row);
+            });
+
+            return card;
+        }
+
+        function updateProgress() {
+            const total = checklistData.length;
+            const checkedCount = checklistData.filter(i => !!state[i.id]).length;
+            const percentage = total === 0 ? 0 : Math.round((checkedCount / total) * 100);
+
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressText').innerText = `${percentage}% (${checkedCount} из ${total})`;
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            
+            const btnIndex = ['all', 'pharmacy', 'cabin', 'luggage'].indexOf(pageId);
+            if (btnIndex !== -1) {
+                document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetAll() {
+            if (confirm('Вы уверены, что хотите сбросить все отмеченные галочки?')) {
+                state = {};
+                saveState();
+                renderItems();
+            }
+        }
+
+        renderItems();
+    </script>
+</body>
+</html>
